@@ -1,0 +1,6 @@
+paddleocr_env/
+__pycache__/
+*.pyc
+.DS_Store
+.agents/skills/
+.claude/skills/
