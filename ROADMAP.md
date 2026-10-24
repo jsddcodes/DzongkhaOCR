@@ -25,7 +25,7 @@ recorded metric or sample count. Not yet benchmarked.
 - [x] First `dzo` vs `bod` × preprocessing × PSM comparison
 - [ ] Fix `ground_truth/printed_download.txt` (missing 8 consonants) after owner review
 - [ ] Uninstall one of `opencv-python` / `opencv-contrib-python`
-- [ ] Populate `requirements.txt` from the working environment
+- [x] Populate `requirements.txt` from the working environment
 - [x] Fill in `README.md` with setup and run instructions
 
 ## Phase 2: Benchmark
@@ -52,9 +52,9 @@ recorded metric or sample count. Not yet benchmarked.
 
 ## Phase 4: Prototype UI
 
-- [ ] Streamlit: remove the duplicate `preprocess_image` call
+- [x] Streamlit: remove the duplicate `preprocess_image` call
 - [ ] Add language/preprocessing selectors that match the benchmarked options
-- [ ] Handle invalid or unreadable uploads gracefully
+- [x] Handle invalid or unreadable uploads gracefully
 - [ ] Verify the app end to end with `streamlit run`
 
 ## Phase 5: Data and models (conditional)
