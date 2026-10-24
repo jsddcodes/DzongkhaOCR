@@ -26,7 +26,7 @@ recorded metric or sample count. Not yet benchmarked.
 - [ ] Fix `ground_truth/printed_download.txt` (missing 8 consonants) after owner review
 - [ ] Uninstall one of `opencv-python` / `opencv-contrib-python`
 - [ ] Populate `requirements.txt` from the working environment
-- [ ] Fill in `README.md` with setup and run instructions
+- [x] Fill in `README.md` with setup and run instructions
 
 ## Phase 2: Benchmark
 
