@@ -36,7 +36,10 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
   CLAHE, and a 3×3 Gaussian blur, returning a grayscale array.
 - `src/ocr.py`: `extract_text(path)` preprocesses, then runs Tesseract with
   `lang="dzo"` and `--psm 6`.
-- `src/evaluate.py`: CER (jiwer) for a single hard-coded image/reference pair.
+- `src/evaluate.py`: batch CER/WER over every `ground_truth/` + `test_data/`
+  pair across a lang × PSM × preprocessing grid. Each run writes
+  `results/eval_<timestamp>/` (results.csv + raw outputs). Scene images are
+  listed in `CATEGORIES` and scored separately.
 - `src/streamlit_app.py`: upload, preview, OCR, download.
 - `src/test_paddle.py`: PaddleOCR experiment. Fails with
   `No models are available for lang=bod`. Don't keep guessing language codes.

@@ -1,41 +1,161 @@
+"""
+Batch evaluation: score every image that has a reference transcript
+across a grid of OCR configurations.
+
+Each run writes to a new timestamped folder in results/:
+- results.csv: one row per image and configuration
+- raw/<image>__<config>.txt: the raw OCR output, before normalization
+
+Usage (from the project root):
+    PYTHONPATH=src paddleocr_env/bin/python src/evaluate.py
+    PYTHONPATH=src paddleocr_env/bin/python src/evaluate.py --langs bod --psms 6
+"""
+
+import argparse
+import csv
+import itertools
+import re
+import time
+import unicodedata
+from datetime import datetime
 from pathlib import Path
 
-from jiwer import cer
+from jiwer import cer, wer
 
 from ocr import extract_text
 
 
-# Paths
-IMAGE_PATH = Path("test_data/painting.jpeg")
-GROUND_TRUTH_PATH = Path("ground_truth/painting.txt")
+GROUND_TRUTH_DIR = Path("ground_truth")
+IMAGE_DIR = Path("test_data")
+RESULTS_DIR = Path("results")
+
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
+
+# Images that are not printed documents, scored in their own category.
+# Anything not listed here counts as "document".
+CATEGORIES = {
+    "painting": "scene",
+}
+
+CSV_FIELDS = [
+    "image", "category", "lang", "psm", "preprocess",
+    "cer", "wer", "exact_match", "ref_chars", "ocr_chars", "runtime_s",
+]
 
 
-# Load ground truth
-ground_truth = GROUND_TRUTH_PATH.read_text(encoding="utf-8")
+def normalize(text):
+    """
+    Normalize text before scoring: Unicode NFC, collapse runs of
+    whitespace (including newlines) to one space, trim the ends.
+    Tsheg and shad are left as they are.
+    """
+    text = unicodedata.normalize("NFC", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
-# Run OCR using our existing pipeline
-ocr_output = extract_text(str(IMAGE_PATH))
+def find_labeled_images():
+    """Pair each ground_truth/<stem>.txt with test_data/<stem>.<ext>."""
+    pairs = []
+
+    for reference_path in sorted(GROUND_TRUTH_DIR.glob("*.txt")):
+        matches = [
+            path for path in IMAGE_DIR.glob(f"{reference_path.stem}.*")
+            if path.suffix.lower() in IMAGE_EXTENSIONS
+        ]
+
+        if not matches:
+            print(f"Skipping {reference_path}: no matching image in {IMAGE_DIR}/")
+            continue
+
+        pairs.append((matches[0], reference_path))
+
+    return pairs
 
 
-# Calculate Character Error Rate
-error_rate = cer(ground_truth, ocr_output)
-print("\nGround truth characters:", len(ground_truth))
-print("OCR output characters:", len(ocr_output))
+def config_name(lang, psm, preprocess):
+    return f"{lang}_psm{psm}_{'pre' if preprocess else 'orig'}"
 
 
-# Display results
-print("\n" + "=" * 50)
-print("Dzongkha OCR Evaluation")
-print("=" * 50)
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("--langs", nargs="+", default=["dzo", "bod", "dzo+bod"])
+    parser.add_argument("--psms", nargs="+", type=int, default=[4, 6])
+    args = parser.parse_args()
 
-print("\nGround Truth:")
-print(ground_truth)
+    run_dir = RESULTS_DIR / f"eval_{datetime.now():%Y%m%d_%H%M%S}"
+    raw_dir = run_dir / "raw"
+    raw_dir.mkdir(parents=True)
 
-print("\nOCR Output:")
-print(ocr_output)
+    rows = []
+    configs = list(itertools.product(args.langs, args.psms, [True, False]))
 
-print("\nCharacter Error Rate (CER):")
-print(f"{error_rate:.2%}")
+    for image_path, reference_path in find_labeled_images():
+        reference = normalize(reference_path.read_text(encoding="utf-8"))
 
-print("=" * 50)
+        if not reference:
+            print(f"Skipping {reference_path}: empty reference")
+            continue
+
+        category = CATEGORIES.get(image_path.stem, "document")
+
+        for lang, psm, preprocess in configs:
+            name = config_name(lang, psm, preprocess)
+
+            start = time.perf_counter()
+            raw_output = extract_text(
+                str(image_path), lang=lang, psm=psm, preprocess=preprocess
+            )
+            runtime = time.perf_counter() - start
+
+            (raw_dir / f"{image_path.stem}__{name}.txt").write_text(
+                raw_output, encoding="utf-8"
+            )
+
+            output = normalize(raw_output)
+
+            rows.append({
+                "image": image_path.name,
+                "category": category,
+                "lang": lang,
+                "psm": psm,
+                "preprocess": preprocess,
+                # jiwer requires a non-empty hypothesis; empty output = 100% error
+                "cer": round(cer(reference, output), 4) if output else 1.0,
+                # Split on spaces only; Dzongkha marks syllables with tsheg,
+                # so this is a rough phrase-level measure
+                "wer": round(wer(reference, output), 4) if output else 1.0,
+                "exact_match": output == reference,
+                "ref_chars": len(reference),
+                "ocr_chars": len(output),
+                "runtime_s": round(runtime, 2),
+            })
+
+            print(f"{image_path.name:28} {name:22} CER {rows[-1]['cer']:7.1%}")
+
+    with open(run_dir / "results.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=CSV_FIELDS)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    # Mean CER per configuration, kept separate by category
+    print("\nMean CER by category and configuration")
+    print("=" * 50)
+
+    for category in sorted({row["category"] for row in rows}):
+        category_rows = [row for row in rows if row["category"] == category]
+        images = len({row["image"] for row in category_rows})
+        print(f"\n{category} ({images} image{'s' if images != 1 else ''})")
+
+        for lang, psm, preprocess in configs:
+            scores = [
+                row["cer"] for row in category_rows
+                if (row["lang"], row["psm"], row["preprocess"]) == (lang, psm, preprocess)
+            ]
+            mean = sum(scores) / len(scores)
+            print(f"  {config_name(lang, psm, preprocess):22} {mean:7.1%}")
+
+    print(f"\nSaved {len(rows)} rows to {run_dir}/")
+
+
+if __name__ == "__main__":
+    main()

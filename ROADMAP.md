@@ -35,7 +35,7 @@ recorded metric or sample count. Not yet benchmarked.
       `low_quality_handwriting`
 - [ ] Add more printed and scanned document samples (multiple fonts, older or
       noisy pages)
-- [ ] Generalize `evaluate.py`: loop over every image with a reference, apply
+- [x] Generalize `evaluate.py`: loop over every image with a reference, apply
       fixed normalization, report CER/WER/exact match/runtime, and save raw
       outputs plus a results CSV to `results/` with timestamps
 - [ ] Document normalization rules (NFC, whitespace, tsheg/shad handling)

@@ -18,8 +18,9 @@ image → preprocessing (OpenCV) → Tesseract (dzo, --psm 6) → text
    2× upscale, grayscale, CLAHE contrast enhancement, and a 3×3 Gaussian blur.
 2. **OCR** ([src/ocr.py](src/ocr.py)): Tesseract with the `dzo` language
    model and page segmentation mode 6 (a single uniform block of text).
-3. **Evaluation** ([src/evaluate.py](src/evaluate.py)): CER against a
-   human-verified reference transcript, computed with `jiwer`.
+3. **Evaluation** ([src/evaluate.py](src/evaluate.py)): scores every image
+   that has a human-verified reference transcript across language models,
+   PSM settings, and preprocessing on/off, using CER computed with `jiwer`.
 
 ## Setup
 
@@ -62,8 +63,10 @@ PYTHONPATH=src python src/ocr.py
 # Save the preprocessed image to results/preprocessed.png
 PYTHONPATH=src python src/preprocessing.py
 
-# CER for the image/reference pair hard-coded in evaluate.py
+# Batch evaluation: every labeled image × dzo/bod/dzo+bod × PSM 4/6 × preprocessing on/off
+# Writes results.csv and raw outputs to a new results/eval_<timestamp>/ folder
 PYTHONPATH=src python src/evaluate.py
+PYTHONPATH=src python src/evaluate.py --langs bod --psms 6   # a smaller grid
 
 # Demo UI: upload an image, preview it, extract text, download the result
 PYTHONPATH=src streamlit run src/streamlit_app.py
@@ -78,7 +81,7 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
 src/
   preprocessing.py   preprocess_image(path) → grayscale array
   ocr.py             extract_text(path) → recognized text
-  evaluate.py        CER for one image/reference pair
+  evaluate.py        batch CER evaluation over all labeled images
   streamlit_app.py   demo UI
   test_paddle.py     PaddleOCR experiment (see Known limitations)
 test_data/           evaluation images
@@ -124,7 +127,7 @@ details.
 - PaddleOCR ([src/test_paddle.py](src/test_paddle.py)) currently fails with
   `No models are available for lang=bod`. No compatible Tibetan/Dzongkha
   recognition model has been found.
-- The scripts use hard-coded paths. A batch evaluation script is planned.
+- `ocr.py` and `preprocessing.py` run on a hard-coded sample image when run directly.
 
 ## Data privacy
 

@@ -4,21 +4,31 @@ import cv2
 from preprocessing import preprocess_image
 
 
-def extract_text(image_path, lang="dzo"):
+def extract_text(image_path, lang="dzo", psm=6, preprocess=True):
     """
     Preprocess an image and extract Dzongkha text using Tesseract.
 
-    lang is the Tesseract language model: "dzo" (Dzongkha) or "bod" (Tibetan).
+    lang is the Tesseract language model: "dzo" (Dzongkha), "bod" (Tibetan),
+    or a combination such as "dzo+bod".
+    psm is Tesseract's page segmentation mode.
+    preprocess=False runs Tesseract on the original image.
     """
 
-    # Preprocess the image
-    processed_image = preprocess_image(image_path)
+    if preprocess:
+        image = preprocess_image(image_path)
+    else:
+        image = cv2.imread(image_path)
+
+        if image is None:
+            raise FileNotFoundError(f"Could not open image: {image_path}")
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     # Run Tesseract with the chosen language model
     text = pytesseract.image_to_string(
-        processed_image,
+        image,
         lang=lang,
-        config="--psm 6"
+        config=f"--psm {psm}"
     )
 
     return text
