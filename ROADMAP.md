@@ -1,7 +1,7 @@
 # Roadmap
 
-Last updated: 2026-10-27. Deadline and required document types: **to be
-confirmed** with the agency.
+Last updated: 2026-10-27. Independent project, continued after a GovTech
+summer internship (report submitted). No external deadline.
 
 ## Current baseline (measured 2026-10-27)
 
@@ -24,60 +24,55 @@ Grayscale + blur had the lowest mean and became the default.
 Handwriting (`handwriting.JPG`, `written_image.jpg`): 62–95% CER at best.
 Tesseract is not usable for handwriting. Scene text (`painting.jpeg`) fails.
 
-## Phase 1: Reproducible baseline
+## Done
 
-- [x] Verify environment and Tesseract language packs (`bod`, `dzo`)
-- [x] Run one image end to end through the existing pipeline
-- [x] First `dzo` vs `bod` × preprocessing × PSM comparison
-- [ ] Fix `ground_truth/printed_download.txt` (missing 8 consonants) after owner review
-- [ ] Uninstall one of `opencv-python` / `opencv-contrib-python`
-- [x] Populate `requirements.txt` from the working environment
-- [x] Fill in `README.md` with setup and run instructions
+- Environment verified; one OpenCV package (`opencv-python` 5.0.0.93);
+  `requirements.txt` and `packages.txt` filled in; README written
+- Batch evaluation (`src/evaluate.py`): every labeled image × `dzo`/`bod`/`dzo+bod`
+  × PSM × preprocessing, NFC + whitespace normalization, raw outputs and CSV
+  per timestamped run, document/handwriting/scene scored separately
+- Preprocessing ablation; default changed to grayscale + blur
+- Streamlit demo live at dzongkhaocr.streamlit.app: sample images, language
+  and clean-up selectors, error handling, demo-only warning
+- Summer report submitted to the agency
 
-## Phase 2: Benchmark
+## Next: benchmark data
 
-- [ ] Write human-verified transcripts for the remaining `test_data/` images:
-      `printed_text`, `website_screenshot`, `written_image`, `handwriting`,
-      `low_quality_handwriting`
-- [ ] Add more printed and scanned document samples (multiple fonts, older or
-      noisy pages)
-- [x] Generalize `evaluate.py`: loop over every image with a reference, apply
-      fixed normalization, report CER/WER/exact match/runtime, and save raw
-      outputs plus a results CSV to `results/` with timestamps
+The benchmark has one real Dzongkha page. Every decision below depends on more.
+
+- [ ] Fix `ground_truth/printed_download.txt`: the image's lines `ཞ་ཟ་འ་ཡ` and
+      `ར་ལ་ཤ་ས` are missing (owner to check against the image and add them)
+- [ ] Add 5–10 printed modern Dzongkha crops with checked transcripts. Aim for
+      variety: news, textbook, government notice, several fonts, scans and photos
 - [ ] Document normalization rules (NFC, whitespace, tsheg/shad handling)
-- [x] Keep document, scene-text, and handwriting scores in separate categories
 
-## Phase 3: Tuning
+## Then: tuning
 
-- [ ] Choose a default language config (`bod`, `dzo`, or `dzo+bod`) from the benchmark
-- [x] Ablate the existing steps one at a time (`src/ablate_preprocessing.py`):
-      original, upscale, grayscale, CLAHE, blur, full, full minus each step
+- [ ] Choose a default language config (`dzo`, `bod`, or `dzo+bod`) using
+      Dzongkha pages only (`prayer.jpg` is Tibetan)
 - [ ] Ablate new candidate steps: thresholding, deskew
 - [ ] Try PSM and DPI settings; consider per-line segmentation for charts and tables
 - [ ] Categorize errors: stacked characters, similar glyphs, spacing,
       punctuation, numerals, stylized fonts
 
-## Phase 4: Prototype UI
+## Later: train Tesseract on Dzongkha
 
-- [x] Streamlit: remove the duplicate `preprocess_image` call
-- [ ] Add language/preprocessing selectors that match the benchmarked options
-- [x] Handle invalid or unreadable uploads gracefully
-- [ ] Verify the app end to end with `streamlit run`
+The largest likely accuracy gain. Can use synthetic data, so it does not
+depend on an agency corpus.
 
-## Phase 5: Data and models (conditional)
+- [ ] Collect openly licensed Dzongkha text and Dzongkha fonts
+- [ ] Render synthetic line images and fine-tune from `dzo` or `bod` (tesstrain)
+- [ ] Compare against `dzo` and `bod` on the benchmark. Keep benchmark text
+      out of the training data
 
-- [ ] Confirm agency corpus: format, size, image/transcript pairing, printed
-      vs handwritten, permissions, retention, and whether data may leave the machine
-- [ ] Decide whether fine-tuning Tesseract on Dzongkha is feasible before the deadline
-- [ ] Revisit PaddleOCR only if a compatible Tibetan/Dzongkha recognition model is confirmed
+## Demo
 
-## Phase 6: Report
+- [ ] Keep the demo's samples and defaults in line with benchmark results
+- [ ] After pushing changes to `src/ocr.py` or `src/preprocessing.py`, reboot
+      the Streamlit Cloud app (it can keep stale modules)
 
-- [ ] Technical report: pipeline, dataset, metrics, failure examples,
-      limitations, next-phase recommendations
+## Parked
 
-## Open questions
-
-- Is handwriting required for the first release?
-- What is the exact deadline and deliverable?
-- Will the agency corpus arrive, and under what terms?
+- Handwriting: Tesseract can't read it; would need a different model and data
+- PaddleOCR: revisit only if a Tibetan/Dzongkha recognition model appears
+- Agency corpus: none was provided; revisit if offered

@@ -14,9 +14,10 @@ production system. See `ROADMAP.md` for status and next steps.
 - Key packages: pytesseract 0.3.13, opencv-python 5.0.0.93, jiwer 4.0.0,
   streamlit 1.60.0, pillow 12.3.0, paddleocr 3.7.0 / paddlepaddle 3.3.1 /
   paddlex 3.7.2.
-- Known issue: `opencv-python` and `opencv-contrib-python` are both installed
-  and can conflict. Keep only one.
-- `requirements.txt` is currently empty.
+- Only `opencv-python` is installed (`opencv-contrib-python` was removed
+  2026-10-27). Don't install both; they share the `cv2` package.
+- `requirements.txt` pins the app's packages; `packages.txt` lists the apt
+  packages Streamlit Cloud needs (Tesseract, `dzo`/`bod`, OpenCV libs).
 
 ## Running
 
