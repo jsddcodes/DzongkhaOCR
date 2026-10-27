@@ -44,8 +44,9 @@ recorded metric or sample count. Not yet benchmarked.
 ## Phase 3: Tuning
 
 - [ ] Choose a default language config (`bod`, `dzo`, or `dzo+bod`) from the benchmark
-- [ ] Ablate preprocessing one step at a time: original, upscale, grayscale,
-      CLAHE, blur, thresholding, deskew
+- [x] Ablate the existing steps one at a time (`src/ablate_preprocessing.py`):
+      original, upscale, grayscale, CLAHE, blur, full, full minus each step
+- [ ] Ablate new candidate steps: thresholding, deskew
 - [ ] Try PSM and DPI settings; consider per-line segmentation for charts and tables
 - [ ] Categorize errors: stacked characters, similar glyphs, spacing,
       punctuation, numerals, stylized fonts

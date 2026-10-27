@@ -40,6 +40,10 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
   pair across a lang × PSM × preprocessing grid. Each run writes
   `results/eval_<timestamp>/` (results.csv + raw outputs). Scene images are
   listed in `CATEGORIES` and scored separately.
+- `src/ablate_preprocessing.py`: CER for each preprocessing step on its own
+  (and full minus each step) on printed documents. Writes
+  `results/ablation_<timestamp>/`. `preprocess_image` takes `upscale`,
+  `grayscale`, `clahe`, `blur` flags; CLAHE forces grayscale.
 - `src/streamlit_app.py`: upload, preview, OCR, download.
 - `src/test_paddle.py`: PaddleOCR experiment. Fails with
   `No models are available for lang=bod`. Don't keep guessing language codes.

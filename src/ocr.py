@@ -17,21 +17,21 @@ def extract_text(image_path, lang="dzo", psm=6, preprocess=True):
     if preprocess:
         image = preprocess_image(image_path)
     else:
-        image = cv2.imread(image_path)
+        image = preprocess_image(
+            image_path, upscale=False, grayscale=False, clahe=False, blur=False
+        )
 
-        if image is None:
-            raise FileNotFoundError(f"Could not open image: {image_path}")
+    return run_tesseract(image, lang=lang, psm=psm)
 
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    # Run Tesseract with the chosen language model
-    text = pytesseract.image_to_string(
+def run_tesseract(image, lang="dzo", psm=6):
+    """Run Tesseract on an image array that is already prepared."""
+
+    return pytesseract.image_to_string(
         image,
         lang=lang,
         config=f"--psm {psm}"
     )
-
-    return text
 
 
 if __name__ == "__main__":

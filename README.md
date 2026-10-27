@@ -68,6 +68,9 @@ PYTHONPATH=src python src/preprocessing.py
 PYTHONPATH=src python src/evaluate.py
 PYTHONPATH=src python src/evaluate.py --langs bod --psms 6   # a smaller grid
 
+# Preprocessing ablation: each clean-up step on its own, on printed documents
+PYTHONPATH=src python src/ablate_preprocessing.py
+
 # Demo UI: upload an image, preview it, extract text, download the result
 PYTHONPATH=src streamlit run src/streamlit_app.py
 
@@ -82,6 +85,7 @@ src/
   preprocessing.py   preprocess_image(path) → grayscale array
   ocr.py             extract_text(path) → recognized text
   evaluate.py        batch CER evaluation over all labeled images
+  ablate_preprocessing.py  CER for each preprocessing step on its own
   streamlit_app.py   demo UI
   test_paddle.py     PaddleOCR experiment (see Known limitations)
 test_data/           evaluation images
