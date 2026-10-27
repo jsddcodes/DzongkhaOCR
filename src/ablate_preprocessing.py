@@ -24,7 +24,9 @@ from datetime import datetime
 
 from jiwer import cer
 
-from evaluate import CATEGORIES, RESULTS_DIR, find_labeled_images, normalize
+from evaluate import (
+    CATEGORIES, DOCUMENT_CATEGORIES, RESULTS_DIR, find_labeled_images, normalize
+)
 from ocr import run_tesseract
 from preprocessing import preprocess_image
 
@@ -57,7 +59,7 @@ def main():
     pairs = [
         (image_path, reference_path)
         for image_path, reference_path in find_labeled_images()
-        if CATEGORIES.get(image_path.stem, "document") == "document"
+        if CATEGORIES.get(image_path.stem, "dzongkha") in DOCUMENT_CATEGORIES
     ]
 
     rows = []

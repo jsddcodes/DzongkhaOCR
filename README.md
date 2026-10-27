@@ -1,6 +1,8 @@
 # Dzongkha OCR
 
-A prototype for recognizing Dzongkha text in document images. It uses
+A prototype for recognizing printed text in the Tibetan script as used in
+Bhutan: Dzongkha for everyday documents, and Classical Tibetan (Chöke) for
+Buddhist prayers and study texts. It uses
 [Tesseract](https://github.com/tesseract-ocr/tesseract) (through
 `pytesseract`), OpenCV preprocessing, and a Streamlit demo UI.
 
@@ -111,18 +113,18 @@ The primary metric is **CER**. When adding to the benchmark:
 
 ### Current results
 
-Printed documents, default preprocessing (grayscale + blur), `--psm 6`.
-Only three printed images have references, so these numbers are
-**hints only**.
+Mean CER, default preprocessing (grayscale + blur), `--psm 6`. The image
+sets are small, so these numbers are **hints only**. Per-image results are
+in [ROADMAP.md](ROADMAP.md).
 
-| Image | `dzo` | `bod` |
-|---|---|---|
-| `textbook_image.jpeg` (modern Dzongkha, photographed page) | 43.4% | 38.5% |
-| `printed_download.jpg` (alphabet chart, stylized headings) | 27.9% | 17.2% |
-| `prayer.jpg` (clean Classical Tibetan text) | 6.4% | 0.0% |
+| Category | Images | `dzo` | `bod` |
+|---|---|---|---|
+| Dzongkha, printed (mostly textbook photos) | 9 | 59.7% | 56.5% |
+| Classical Tibetan, printed (one clean digital prayer) | 1 | 6.4% | 0.0% |
+| Handwriting | 2 | 84.5% | 87.5% |
 
-`prayer.jpg` is Tibetan, so it favors `bod` and says little about Dzongkha.
-Handwriting is not usable with Tesseract (62–95% CER on two samples).
+Clean images are read well; shadows, background, and curved pages cause
+most errors. Handwriting is not usable with Tesseract.
 
 ## Known limitations
 

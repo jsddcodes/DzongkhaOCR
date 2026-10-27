@@ -31,14 +31,18 @@ RESULTS_DIR = Path("results")
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
-# Images that are not printed documents, scored in their own category.
-# Anything not listed here counts as "document".
+# Each image is scored in one category. Printed documents are split by
+# language: Dzongkha, and Classical Tibetan (Chöke) used for Buddhist texts.
+# Anything not listed here counts as "dzongkha".
 CATEGORIES = {
+    "prayer": "tibetan",
     "painting": "scene",
     "written_image": "handwriting",
     "handwriting": "handwriting",
     "low_quality_handwriting": "handwriting",
 }
+
+DOCUMENT_CATEGORIES = {"dzongkha", "tibetan"}
 
 CSV_FIELDS = [
     "image", "category", "lang", "psm", "preprocess",
@@ -99,7 +103,7 @@ def main():
             print(f"Skipping {reference_path}: empty reference")
             continue
 
-        category = CATEGORIES.get(image_path.stem, "document")
+        category = CATEGORIES.get(image_path.stem, "dzongkha")
 
         for lang, psm, preprocess in configs:
             name = config_name(lang, psm, preprocess)

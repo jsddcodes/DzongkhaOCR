@@ -1,7 +1,9 @@
 # CLAUDE.md
 
-Dzongkha OCR prototype: recognize Dzongkha text from document images using
-Tesseract (via `pytesseract`), OpenCV preprocessing, and a Streamlit demo UI.
+Dzongkha OCR prototype: recognize printed Tibetan-script text as used in
+Bhutan, in two languages: Dzongkha (everyday documents) and Classical Tibetan
+(Chöke, used for Buddhist prayers and study). Uses Tesseract (via
+`pytesseract`), OpenCV preprocessing, and a Streamlit demo UI.
 Goal is a reproducible baseline with honest CER-based evaluation, not a
 production system. See `ROADMAP.md` for status and next steps.
 
@@ -62,8 +64,12 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
   images. With so few labeled images, treat differences as hints only.
 - Ground truth must be human-verified. Don't edit or replace reference
   transcripts without the owner's confirmation.
-- `painting.jpeg` is scene text (painted rock), not a document. Report it
-  separately rather than in the document benchmark.
+- Score Dzongkha and Tibetan documents as separate categories
+  (`CATEGORIES` in `src/evaluate.py`; unlisted images count as `dzongkha`).
+  Add every new Tibetan image there as `tibetan`. Never pool the two when
+  choosing a model; `bod` has a built-in advantage on Tibetan text.
+- `painting.jpeg` is scene text (painted rock), and handwriting is its own
+  category. Report both separately from the document benchmark.
 
 ## Rules
 
