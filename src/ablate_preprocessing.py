@@ -6,8 +6,8 @@ preprocessing variants. Two groups:
 - base: the original four steps (upscale, grayscale, clahe, blur): the
   original image, each step on its own, all four, and all four minus each
 - photo: steps for real photos (crop to page, shadow removal, adaptive
-  threshold, deskew) added one at a time on top of the default
-  (grayscale + blur)
+  threshold, deskew) added on top of grayscale + blur. The current
+  pipeline default is "gray_blur+threshold"
 
 Each run writes to a new timestamped folder in results/:
 - results.csv: one row per image, variant, and language model
@@ -36,7 +36,7 @@ BASE_STEPS = ["upscale", "grayscale", "clahe", "blur"]
 PHOTO_STEPS = ["crop_page", "remove_shadows", "threshold", "deskew"]
 STEPS = BASE_STEPS + PHOTO_STEPS
 
-DEFAULT = {"grayscale", "blur"}
+GRAY_BLUR = {"grayscale", "blur"}
 
 # Variant name -> the steps switched on
 BASE_VARIANTS = {"original": set()}
@@ -45,15 +45,15 @@ BASE_VARIANTS["base_full"] = set(BASE_STEPS)
 BASE_VARIANTS.update({f"base_full_minus_{step}": set(BASE_STEPS) - {step} for step in BASE_STEPS})
 
 PHOTO_VARIANTS = {
-    "default": DEFAULT,
-    "default+crop": DEFAULT | {"crop_page"},
-    "default+shadows": DEFAULT | {"remove_shadows"},
-    "default+threshold": DEFAULT | {"threshold"},
-    "default+deskew": DEFAULT | {"deskew"},
-    "default+shadows+threshold": DEFAULT | {"remove_shadows", "threshold"},
-    "default+crop+shadows": DEFAULT | {"crop_page", "remove_shadows"},
-    "default+crop+shadows+threshold": DEFAULT | {"crop_page", "remove_shadows", "threshold"},
-    "all_photo_steps": DEFAULT | set(PHOTO_STEPS),
+    "gray_blur": GRAY_BLUR,
+    "gray_blur+crop": GRAY_BLUR | {"crop_page"},
+    "gray_blur+shadows": GRAY_BLUR | {"remove_shadows"},
+    "gray_blur+threshold": GRAY_BLUR | {"threshold"},
+    "gray_blur+deskew": GRAY_BLUR | {"deskew"},
+    "gray_blur+shadows+threshold": GRAY_BLUR | {"remove_shadows", "threshold"},
+    "gray_blur+crop+shadows": GRAY_BLUR | {"crop_page", "remove_shadows"},
+    "gray_blur+crop+shadows+threshold": GRAY_BLUR | {"crop_page", "remove_shadows", "threshold"},
+    "all_photo_steps": GRAY_BLUR | set(PHOTO_STEPS),
 }
 
 GROUPS = {

@@ -76,6 +76,9 @@ PYTHONPATH=src python src/preprocessing.py
 PYTHONPATH=src python src/evaluate.py
 PYTHONPATH=src python src/evaluate.py --langs bod --psms 6   # a smaller grid
 
+# Error breakdown by character type (default: bod_uchen, default preprocessing)
+PYTHONPATH=src python src/error_analysis.py
+
 # Preprocessing ablation: each clean-up step on its own, on printed documents
 PYTHONPATH=src python src/ablate_preprocessing.py
 
@@ -94,6 +97,10 @@ src/
   ocr.py             extract_text(path) → recognized text
   evaluate.py        batch CER evaluation over all labeled images
   ablate_preprocessing.py  CER for each preprocessing step on its own
+  error_analysis.py  errors by character type (consonant, stacked, tsheg, ...)
+docs/
+  photo_guidelines.md  how to photograph pages for OCR and the test set
+models/              Tesseract models kept in the repo (bod_uchen)
   streamlit_app.py   demo UI
   test_paddle.py     PaddleOCR experiment (see Known limitations)
 test_data/           evaluation images

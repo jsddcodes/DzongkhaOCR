@@ -50,6 +50,10 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
   pair across a lang × PSM × preprocessing grid. Each run writes
   `results/eval_<timestamp>/` (results.csv + raw outputs). Scene images are
   listed in `CATEGORIES` and scored separately.
+- `src/error_analysis.py`: Levenshtein edit ops between reference and output,
+  counted by character type (consonant, stacked, vowel/mark, tsheg, shad,
+  space, digit, other) and kind (missed, extra, substituted), per category.
+- `docs/photo_guidelines.md`: how to photograph pages and add test images.
 - `src/ablate_preprocessing.py`: CER per preprocessing variant on printed
   documents, mean per category. `--group base` (original four steps, each
   alone and full minus each), `--group photo` (photo steps added to the
@@ -66,6 +70,7 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
 
 - Primary metric is CER. Normalize both sides the same way before scoring
   (Unicode NFC, collapse whitespace) and keep raw output alongside.
+  `cer_nospace` (spaces removed) is a secondary check, not a replacement.
 - Compare configurations (`dzo`/`bod`, preprocessing variant, PSM) on identical
   images. With so few labeled images, treat differences as hints only.
 - Ground truth must be human-verified. Don't edit or replace reference

@@ -46,7 +46,7 @@ DOCUMENT_CATEGORIES = {"dzongkha", "tibetan"}
 
 CSV_FIELDS = [
     "image", "category", "lang", "psm", "preprocess",
-    "cer", "wer", "exact_match", "ref_chars", "ocr_chars", "runtime_s",
+    "cer", "cer_nospace", "wer", "exact_match", "ref_chars", "ocr_chars", "runtime_s",
 ]
 
 
@@ -58,6 +58,12 @@ def normalize(text):
     """
     text = unicodedata.normalize("NFC", text)
     return re.sub(r"\s+", " ", text).strip()
+
+
+def cer_without_spaces(reference, output):
+    """CER after removing every space from both normalized texts."""
+    reference, output = reference.replace(" ", ""), output.replace(" ", "")
+    return round(cer(reference, output), 4) if output else 1.0
 
 
 def find_labeled_images():
@@ -128,6 +134,10 @@ def main():
                 "preprocess": preprocess,
                 # jiwer requires a non-empty hypothesis; empty output = 100% error
                 "cer": round(cer(reference, output), 4) if output else 1.0,
+                # Secondary: CER with all spaces removed. Spacing between
+                # Dzongkha phrases varies with typesetting, so this isolates
+                # errors in the letters and punctuation themselves
+                "cer_nospace": cer_without_spaces(reference, output),
                 # Split on spaces only; Dzongkha marks syllables with tsheg,
                 # so this is a rough phrase-level measure
                 "wer": round(wer(reference, output), 4) if output else 1.0,
@@ -158,8 +168,14 @@ def main():
                 row["cer"] for row in category_rows
                 if (row["lang"], row["psm"], row["preprocess"]) == (lang, psm, preprocess)
             ]
-            mean = sum(scores) / len(scores)
-            print(f"  {config_name(lang, psm, preprocess):22} {mean:7.1%}")
+            nospace = [
+                row["cer_nospace"] for row in category_rows
+                if (row["lang"], row["psm"], row["preprocess"]) == (lang, psm, preprocess)
+            ]
+            print(
+                f"  {config_name(lang, psm, preprocess):22} {sum(scores) / len(scores):7.1%}"
+                f"   (ignoring spaces {sum(nospace) / len(nospace):6.1%})"
+            )
 
     print(f"\nSaved {len(rows)} rows to {run_dir}/")
 

@@ -78,22 +78,38 @@ Findings so far:
 ## Next
 
 1. ~~**Handle real photos.**~~ Done 2026-10-27: adaptive threshold added to
-   the default. Follow-up: choose preprocessing per image (for example, skip
-   thresholding when the page is already evenly lit), since clean images
-   do better without it.
-2. **Build the Tibetan benchmark.** Add 5–10 printed Chöke samples with
+   the default.
+2. **Choose preprocessing per image** (re-test with more images). Picking the
+   better of threshold / no threshold per image would cut mean CER from
+   29.2% to 24.7% on the 10 printed images (`bod_uchen`). Tried 2026-10-27:
+   - Lighting measures don't separate the cases (`textbook_image1` and
+     `textbook_image2` look alike but need opposite settings).
+   - Keeping the run with higher Tesseract confidence reached 27.3%, but
+     picked wrong on 2 of 10, doubles runtime, and confidences are noisy
+     (many near 0). Not adopted.
+3. **Build the Tibetan benchmark.** Add 5–10 printed Chöke samples with
    checked transcripts: printed prayer books, pecha pages, and several fonts.
    `bod_uchen` was trained on pechas, so this is where it should be tested.
    Candidate source: openpecha/OCR-Tibetan_line_to_text_benchmark (~420k
    line images with text, mostly printed); its license is not yet confirmed.
-3. **Confirm the model per category** (`bod_uchen`, `bod`, `dzo`) once both
+4. **Confirm the model per category** (`bod_uchen`, `bod`, `dzo`) once both
    categories have enough images. If they differ, add a "text type" option
    (Dzongkha / Tibetan) to the demo.
-4. **Write photo guidelines** for capturing pages: flat, even light, no
-   shadow, page fills the frame, camera straight above.
-5. **Categorize errors**: stacked characters, similar glyphs, spacing,
-   tsheg/shad punctuation, numerals, stylized fonts.
-6. Document normalization rules (NFC, whitespace, tsheg/shad handling).
+5. ~~**Write photo guidelines.**~~ Done: [docs/photo_guidelines.md](docs/photo_guidelines.md).
+6. ~~**Categorize errors.**~~ Done: `src/error_analysis.py`. For `bod_uchen` on
+   Dzongkha (590 errors over 2,125 characters): consonants 44%, tsheg 15%,
+   shad 11%, spaces 11%, stacked letters 8%, vowel signs 8%, digits and
+   other 4%. Missed characters 36%, extra 25%, substituted 39%.
+7. **Normalization rules.** Current: NFC, whitespace runs collapsed to one
+   space. `evaluate.py` also reports `cer_nospace` (all spaces removed); it
+   changes mean Dzongkha CER only from 32.0% to 31.5%, so spacing is not
+   hiding real accuracy. Open: whether to treat tsheg before shad (`ང་།` vs
+   `ང།`) and leading shad as equivalent.
+
+Also checked 2026-10-27: PSM 3, 4, and 6 with every photo variant for
+`bod_uchen` and `bod`. The current default (grayscale + blur + threshold,
+PSM 6, 32.0%) was within 0.2 points of the best Dzongkha result (PSM 3,
+31.8%), and PSM 3/4 were worse on the Tibetan sample, so PSM 6 stays.
 
 ## Later: train Tesseract
 
