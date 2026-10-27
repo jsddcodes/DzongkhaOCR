@@ -1,22 +1,28 @@
 # Roadmap
 
-Last updated: 2026-10-23. Deadline and required document types: **to be
+Last updated: 2026-10-27. Deadline and required document types: **to be
 confirmed** with the agency.
 
-## Current baseline (measured 2026-10-23)
+## Current baseline (measured 2026-10-27)
 
-| Image | Best config | CER | Notes |
+Default preprocessing (grayscale + blur), `--psm 6`. Three printed images,
+so indicative only.
+
+| Image | `dzo` | `bod` | Notes |
 |---|---|---|---|
-| `printed_download.jpg` | `bod`, current preprocessing, `--psm 4`/`6` | 41.8%* | Headings correct; large stylized vowel line missed; consonant rows partly garbled |
-| `printed_download.jpg` | current default (`dzo`, `--psm 6`) | 50.0%* | |
-| `painting.jpeg` | current default | 2433% | Scene text, not a document; background read as noise |
+| `textbook_image.jpeg` | 43.4% | 38.5% | Modern Dzongkha, photographed; highlighted heading missed |
+| `printed_download.jpg` | 41.1% | 39.3% | Alphabet chart; large stylized lines are the main errors |
+| `prayer.jpg` | 6.4% | 0.0% | Classical Tibetan, so it favors `bod` |
+| Mean | 30.3% | 25.9% | `dzo+bod` 25.3% |
 
-\* Against a draft corrected reference. The committed reference omits
-`ཞ་ཟ་འ་ཡ` and `ར་ལ་ཤ་ས` (55.1% / 56.1% against it). Single image, so
-indicative only.
+Preprocessing ablation (`src/ablate_preprocessing.py`): the old default
+(upscale + grayscale + CLAHE + blur) averaged 88–97% CER, against 34–38% for
+the original image. CLAHE alone roughly doubled errors on the textbook photo,
+probably by amplifying text showing through from the back of the page.
+Grayscale + blur had the lowest mean and became the default.
 
-Handwriting: earlier informal results (`bod` ~20%, `dzo` ~10%) have no
-recorded metric or sample count. Not yet benchmarked.
+Handwriting (`handwriting.JPG`, `written_image.jpg`): 62–95% CER at best.
+Tesseract is not usable for handwriting. Scene text (`painting.jpeg`) fails.
 
 ## Phase 1: Reproducible baseline
 

@@ -32,8 +32,9 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
 
 ## Layout
 
-- `src/preprocessing.py`: `preprocess_image(path)` does 2× upscale, grayscale,
-  CLAHE, and a 3×3 Gaussian blur, returning a grayscale array.
+- `src/preprocessing.py`: `preprocess_image(path)` defaults to grayscale +
+  3×3 Gaussian blur (upscale and CLAHE off; chosen from the 2026-10-27
+  ablation). Returns a grayscale array, or RGB if every step is off.
 - `src/ocr.py`: `extract_text(path)` preprocesses, then runs Tesseract with
   `lang="dzo"` and `--psm 6`.
 - `src/evaluate.py`: batch CER/WER over every `ground_truth/` + `test_data/`

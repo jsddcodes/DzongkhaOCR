@@ -1,11 +1,16 @@
 import cv2
 
 
-def preprocess_image(image_path, upscale=True, grayscale=True, clahe=True, blur=True):
+def preprocess_image(image_path, upscale=False, grayscale=True, clahe=False, blur=True):
     """
     Prepare a Dzongkha image for OCR.
 
-    Steps, each of which can be switched off:
+    The default is grayscale + blur. In the preprocessing ablation
+    (2026-10-27, 3 printed images) it had the lowest mean CER; CLAHE
+    roughly doubled errors on photographed pages, and upscaling hurt
+    when combined with blur.
+
+    Steps, each of which can be switched on or off:
     1. Upscale 2x
     2. Convert to grayscale
     3. Improve contrast using CLAHE (works on one channel, so it

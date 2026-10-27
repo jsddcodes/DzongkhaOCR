@@ -115,7 +115,7 @@ if image_path is not None:
             st.subheader("Preprocessed image")
             st.image(
                 processed_image,
-                caption="2× upscaled, grayscale, contrast-enhanced, lightly blurred",
+                caption="Grayscale, lightly blurred",
                 width="stretch"
             )
 
@@ -133,9 +133,10 @@ if image_path is not None:
 
             use_preprocessing = st.toggle(
                 "Clean up image before OCR",
-                value=False,
-                help="Off by default: on the printed test images, "
-                     "OCR on the original image scored better."
+                value=True,
+                help="Converts to grayscale and lightly blurs the image. "
+                     "On the printed test images this scored better "
+                     "than the original image."
             )
 
             extract_button = st.button(

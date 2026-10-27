@@ -15,7 +15,9 @@ image → preprocessing (OpenCV) → Tesseract (dzo, --psm 6) → text
 ```
 
 1. **Preprocessing** ([src/preprocessing.py](src/preprocessing.py)):
-   2× upscale, grayscale, CLAHE contrast enhancement, and a 3×3 Gaussian blur.
+   grayscale and a 3×3 Gaussian blur by default. Upscaling and CLAHE contrast
+   enhancement are available but off, because they hurt accuracy in testing
+   (see [ROADMAP.md](ROADMAP.md)).
 2. **OCR** ([src/ocr.py](src/ocr.py)): Tesseract with the `dzo` language
    model and page segmentation mode 6 (a single uniform block of text).
 3. **Evaluation** ([src/evaluate.py](src/evaluate.py)): scores every image
@@ -109,17 +111,18 @@ The primary metric is **CER**. When adding to the benchmark:
 
 ### Current results
 
-Only one document image has a reference so far, so these numbers are
+Printed documents, default preprocessing (grayscale + blur), `--psm 6`.
+Only three printed images have references, so these numbers are
 **hints only**.
 
-| Image | Config | CER |
+| Image | `dzo` | `bod` |
 |---|---|---|
-| `printed_download.jpg` | `bod`, current preprocessing, `--psm 4` or `6` | 41.8%\* |
-| `printed_download.jpg` | `dzo`, `--psm 6` (default) | 50.0%\* |
+| `textbook_image.jpeg` (modern Dzongkha, photographed page) | 43.4% | 38.5% |
+| `printed_download.jpg` (alphabet chart, stylized headings) | 41.1% | 39.3% |
+| `prayer.jpg` (clean Classical Tibetan text) | 6.4% | 0.0% |
 
-\* Measured against a draft corrected reference. The committed reference is
-missing two lines and is awaiting review. See [ROADMAP.md](ROADMAP.md) for
-details.
+`prayer.jpg` is Tibetan, so it favors `bod` and says little about Dzongkha.
+Handwriting is not usable with Tesseract (62–95% CER on two samples).
 
 ## Known limitations
 
