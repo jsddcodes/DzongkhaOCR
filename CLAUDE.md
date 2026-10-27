@@ -12,7 +12,10 @@ production system. See `ROADMAP.md` for status and next steps.
 - Use `paddleocr_env/bin/python` (Python 3.11.15). It is the only environment
   with all dependencies. The system `python3` (3.14) lacks OpenCV and jiwer.
 - Tesseract 5.5.2 at `/opt/homebrew/bin/tesseract`; `bod` and `dzo` traineddata
-  installed in `/opt/homebrew/share/tessdata/`.
+  installed in `/opt/homebrew/share/tessdata/`. `bod_uchen` (BDRC, CC0) is in
+  the repo at `models/`; `ocr.run_tesseract` adds `--tessdata-dir models`
+  automatically for any model found there. From the CLI, pass
+  `--tessdata-dir models -l bod_uchen`.
 - Key packages: pytesseract 0.3.13, opencv-python 5.0.0.93, jiwer 4.0.0,
   streamlit 1.60.0, pillow 12.3.0, paddleocr 3.7.0 / paddlepaddle 3.3.1 /
   paddlex 3.7.2.
@@ -41,8 +44,8 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
   `clahe`, `deskew`. Returns a grayscale array, or RGB if every step is off.
   When adding a step, also add it to the all-off call in `ocr.extract_text`
   (`preprocess=False` must mean the original image).
-- `src/ocr.py`: `extract_text(path)` preprocesses, then runs Tesseract with
-  `lang="dzo"` and `--psm 6`.
+- `src/ocr.py`: `extract_text(path, lang="dzo", psm=6, preprocess=True)`
+  preprocesses, then runs Tesseract. The demo passes `lang="bod_uchen"`.
 - `src/evaluate.py`: batch CER/WER over every `ground_truth/` + `test_data/`
   pair across a lang × PSM × preprocessing grid. Each run writes
   `results/eval_<timestamp>/` (results.csv + raw outputs). Scene images are

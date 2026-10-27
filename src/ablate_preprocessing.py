@@ -70,7 +70,7 @@ CSV_FIELDS = [
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--langs", nargs="+", default=["dzo", "bod"])
+    parser.add_argument("--langs", nargs="+", default=["dzo", "bod", "bod_uchen"])
     parser.add_argument("--psm", type=int, default=6)
     parser.add_argument("--group", choices=GROUPS, default="all")
     args = parser.parse_args()

@@ -16,8 +16,9 @@ SAMPLE_IMAGES = {
 }
 
 LANGUAGE_MODELS = {
-    "Dzongkha (dzo)": "dzo",
+    "BDRC Uchen (bod_uchen)": "bod_uchen",
     "Tibetan (bod)": "bod",
+    "Dzongkha (dzo)": "dzo",
 }
 
 
@@ -126,9 +127,11 @@ if image_path is not None:
             language = st.segmented_control(
                 "Language model",
                 list(LANGUAGE_MODELS),
-                default="Tibetan (bod)",
-                help="Dzongkha and Tibetan share a script. "
-                     "Either model may do better on a given image."
+                default="BDRC Uchen (bod_uchen)",
+                help="Dzongkha and Tibetan share a script. bod_uchen is "
+                     "BDRC's model trained on printed Tibetan texts; it did "
+                     "best on photographed Dzongkha pages. Large decorative "
+                     "fonts may read better with bod."
             )
 
             use_preprocessing = st.toggle(

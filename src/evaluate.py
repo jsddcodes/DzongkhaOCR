@@ -85,7 +85,7 @@ def config_name(lang, psm, preprocess):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--langs", nargs="+", default=["dzo", "bod", "dzo+bod"])
+    parser.add_argument("--langs", nargs="+", default=["dzo", "bod", "dzo+bod", "bod_uchen"])
     parser.add_argument("--psms", nargs="+", type=int, default=[4, 6])
     args = parser.parse_args()
 

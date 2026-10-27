@@ -19,11 +19,17 @@ page layouts (for example pecha pages) differ.
 Default preprocessing (grayscale + blur + adaptive threshold), `--psm 6`.
 CER, lower is better.
 
-| Category | Images | `dzo` | `bod` | `dzo+bod` |
-|---|---|---|---|---|
-| Dzongkha, printed | 9 | 43.4% | 34.4% | 40.1% |
-| Tibetan, printed | 1 | 6.4% | 0.0% | 0.0% |
-| Handwriting | 2 | 98.0% | 89.8% | 85.5% |
+| Category | Images | `dzo` | `bod` | `dzo+bod` | `bod_uchen` |
+|---|---|---|---|---|---|
+| Dzongkha, printed | 9 | 43.4% | 34.4% | 40.1% | 32.0% |
+| Tibetan, printed | 1 | 6.4% | 0.0% | 0.0% | 3.2% |
+| Handwriting | 2 | 98.0% | 89.8% | 85.5% | — |
+
+`bod_uchen` is BDRC's Tesseract model fine-tuned from `bod` on ~121k printed
+Tibetan lines (CC0, in `models/`). On the 8 textbook photos it averages 27.2%
+against 35.0% for `bod`, winning on 6 of 8. It does badly on the stylized
+alphabet chart (`printed_download.jpg` 70.5% against 29.5%). On `prayer.jpg`
+it drops the leading `།` of each line (3.2%).
 
 Dzongkha per image, `bod` (previous default grayscale + blur → current):
 
@@ -51,7 +57,7 @@ Findings so far:
   + threshold 34.4%; + both 37.1%; + crop 56.4%; + deskew 60.8%.
 - The original pipeline (upscale + grayscale + CLAHE + blur) was far worse on
   every printed image; CLAHE amplified show-through from the back of pages.
-- `bod` is slightly ahead of `dzo` on Dzongkha, but not on every image.
+- Model ranking on Dzongkha so far: `bod_uchen` > `bod` > `dzo+bod` > `dzo`.
 - The one Tibetan sample is a clean digital render, so its 0% says little
   about real prayer books or pechas.
 - Tesseract cannot read handwriting. Scene text (`painting.jpeg`) fails.
@@ -65,6 +71,7 @@ Findings so far:
 - Preprocessing ablation (`src/ablate_preprocessing.py`)
 - 9 printed Dzongkha references, including 8 textbook photos;
   `printed_download.txt` completed
+- BDRC `bod_uchen` model added (`models/`) and set as the demo default
 - Streamlit demo live at dzongkhaocr.streamlit.app
 - Summer report submitted to the agency
 
@@ -76,9 +83,12 @@ Findings so far:
    do better without it.
 2. **Build the Tibetan benchmark.** Add 5–10 printed Chöke samples with
    checked transcripts: printed prayer books, pecha pages, and several fonts.
-3. **Choose a language model per category** (`dzo`, `bod`, or `dzo+bod`) once
-   both categories have enough images. If they differ, add a "text type"
-   option (Dzongkha / Tibetan) to the demo.
+   `bod_uchen` was trained on pechas, so this is where it should be tested.
+   Candidate source: openpecha/OCR-Tibetan_line_to_text_benchmark (~420k
+   line images with text, mostly printed); its license is not yet confirmed.
+3. **Confirm the model per category** (`bod_uchen`, `bod`, `dzo`) once both
+   categories have enough images. If they differ, add a "text type" option
+   (Dzongkha / Tibetan) to the demo.
 4. **Write photo guidelines** for capturing pages: flat, even light, no
    shadow, page fills the frame, camera straight above.
 5. **Categorize errors**: stacked characters, similar glyphs, spacing,

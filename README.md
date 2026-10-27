@@ -13,15 +13,17 @@ character error rate (CER). It is not a production system. See
 ## How it works
 
 ```
-image → preprocessing (OpenCV) → Tesseract (dzo, --psm 6) → text
+image → preprocessing (OpenCV) → Tesseract (bod_uchen / bod / dzo, --psm 6) → text
 ```
 
 1. **Preprocessing** ([src/preprocessing.py](src/preprocessing.py)):
    grayscale, a 3×3 Gaussian blur, and an adaptive threshold (black and white,
    tolerant of shadows) by default. Upscaling, CLAHE, shadow removal, page
    cropping, and deskew are available but off (see [ROADMAP.md](ROADMAP.md)).
-2. **OCR** ([src/ocr.py](src/ocr.py)): Tesseract with the `dzo` language
-   model and page segmentation mode 6 (a single uniform block of text).
+2. **OCR** ([src/ocr.py](src/ocr.py)): Tesseract with page segmentation
+   mode 6 (a single uniform block of text) and one of three language models:
+   `bod_uchen` (BDRC's Tibetan Uchen model, included in [models/](models/)),
+   `bod`, or `dzo`. The demo defaults to `bod_uchen`.
 3. **Evaluation** ([src/evaluate.py](src/evaluate.py)): scores every image
    that has a human-verified reference transcript across language models,
    PSM settings, and preprocessing on/off, using CER computed with `jiwer`.
@@ -38,7 +40,9 @@ tesseract --list-langs                  # should list both dzo and bod
 ```
 
 `dzo` is Dzongkha and `bod` is Tibetan. They share a script, and both are
-worth comparing.
+worth comparing. The third model, `bod_uchen`, ships with the repo in
+`models/` (CC0, from the Buddhist Digital Resource Center), so it needs no
+installation; see [models/README.md](models/README.md).
 
 ### 2. Python environment
 
@@ -117,11 +121,11 @@ Mean CER, default preprocessing (grayscale + blur + adaptive threshold),
 `--psm 6`. The image sets are small, so these numbers are **hints only**.
 Per-image results are in [ROADMAP.md](ROADMAP.md).
 
-| Category | Images | `dzo` | `bod` |
-|---|---|---|---|
-| Dzongkha, printed (mostly textbook photos) | 9 | 43.4% | 34.4% |
-| Classical Tibetan, printed (one clean digital prayer) | 1 | 6.4% | 0.0% |
-| Handwriting | 2 | 98.0% | 89.8% |
+| Category | Images | `dzo` | `bod` | `bod_uchen` |
+|---|---|---|---|---|
+| Dzongkha, printed (mostly textbook photos) | 9 | 43.4% | 34.4% | 32.0% |
+| Classical Tibetan, printed (one clean digital prayer) | 1 | 6.4% | 0.0% | 3.2% |
+| Handwriting | 2 | 98.0% | 89.8% | — |
 
 Shadows, background, and curved pages cause most errors; the adaptive
 threshold handles much of that. Handwriting is not usable with Tesseract.
