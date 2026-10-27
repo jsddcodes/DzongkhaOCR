@@ -11,8 +11,8 @@ from preprocessing import preprocess_image
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SAMPLE_IMAGES = {
+    "Printed prayer": PROJECT_ROOT / "test_data" / "prayer.jpg",
     "Printed character chart": PROJECT_ROOT / "test_data" / "printed_download.jpg",
-    "Printed page": PROJECT_ROOT / "test_data" / "printed_text.jpeg",
 }
 
 LANGUAGE_MODELS = {
@@ -126,9 +126,16 @@ if image_path is not None:
             language = st.segmented_control(
                 "Language model",
                 list(LANGUAGE_MODELS),
-                default="Dzongkha (dzo)",
+                default="Tibetan (bod)",
                 help="Dzongkha and Tibetan share a script. "
                      "Either model may do better on a given image."
+            )
+
+            use_preprocessing = st.toggle(
+                "Clean up image before OCR",
+                value=False,
+                help="Off by default: on the printed test images, "
+                     "OCR on the original image scored better."
             )
 
             extract_button = st.button(
@@ -144,7 +151,8 @@ if image_path is not None:
                     with st.spinner("Processing image..."):
                         text = extract_text(
                             image_path,
-                            lang=LANGUAGE_MODELS[language]
+                            lang=LANGUAGE_MODELS[language],
+                            preprocess=use_preprocessing
                         )
                 except pytesseract.TesseractError as error:
                     st.error(f"OCR failed: {error}", icon=":material/error:")
