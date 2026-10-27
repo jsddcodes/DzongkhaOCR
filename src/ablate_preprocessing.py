@@ -136,7 +136,7 @@ def main():
 
     print(f"\nMean CER by variant, PSM {args.psm}")
     print(f"  {'variant':32}" + "".join(
-        f"{f'{category} {lang}':>16}" for category, lang in columns
+        f"{f'{category} {lang}':>22}" for category, lang in columns
     ))
 
     for variant in variants:
@@ -149,7 +149,7 @@ def main():
             ]
             means.append(sum(scores) / len(scores))
 
-        print(f"  {variant:32}" + "".join(f"{mean:16.1%}" for mean in means))
+        print(f"  {variant:32}" + "".join(f"{mean:22.1%}" for mean in means))
 
     counts = ", ".join(
         f"{category}: {sum(1 for _, _, c in pairs if c == category)}" for category in categories
