@@ -18,7 +18,15 @@ def extract_text(image_path, lang="dzo", psm=6, preprocess=True):
         image = preprocess_image(image_path)
     else:
         image = preprocess_image(
-            image_path, upscale=False, grayscale=False, clahe=False, blur=False
+            image_path,
+            upscale=False,
+            grayscale=False,
+            crop_page=False,
+            remove_shadows=False,
+            clahe=False,
+            blur=False,
+            threshold=False,
+            deskew=False,
         )
 
     return run_tesseract(image, lang=lang, psm=psm)

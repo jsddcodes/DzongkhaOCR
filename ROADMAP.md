@@ -16,35 +16,40 @@ page layouts (for example pecha pages) differ.
 
 ## Current baseline (measured 2026-10-27)
 
-Default preprocessing (grayscale + blur), `--psm 6`. CER, lower is better.
+Default preprocessing (grayscale + blur + adaptive threshold), `--psm 6`.
+CER, lower is better.
 
 | Category | Images | `dzo` | `bod` | `dzo+bod` |
 |---|---|---|---|---|
-| Dzongkha, printed | 9 | 59.7% | 56.5% | 58.7% |
+| Dzongkha, printed | 9 | 43.4% | 34.4% | 40.1% |
 | Tibetan, printed | 1 | 6.4% | 0.0% | 0.0% |
-| Handwriting | 2 | 84.5% | 87.5% | 84.2% |
+| Handwriting | 2 | 98.0% | 89.8% | 85.5% |
 
-Dzongkha per image (`dzo` / `bod`):
+Dzongkha per image, `bod` (previous default grayscale + blur → current):
 
-| Image | `dzo` | `bod` | Photo conditions |
+| Image | Before | Now | Photo conditions |
 |---|---|---|---|
-| `printed_download.jpg` | 27.9% | 17.2% | Clean digital chart |
-| `textbook_image6.jpeg` | 44.2% | 30.0% | |
-| `textbook_image1.jpg` | 40.8% | 37.4% | |
-| `textbook_image.jpeg` | 43.4% | 38.5% | Highlighter, show-through |
-| `textbook_image2.jpg` | 57.3% | 53.1% | |
-| `textbook_image5.jpeg` | 78.6% | 75.3% | Large shadow across the page |
-| `textbook_image7.jpeg` | 75.7% | 76.8% | Shadow, curved page; whole lines skipped |
-| `textbook_image3.jpeg` | 84.4% | 84.1% | |
-| `textbook_image4.jpeg` | 84.5% | 95.9% | Dark table in frame; 25–37% without preprocessing |
+| `textbook_image5.jpeg` | 75.3% | 21.3% | Large shadow across the page |
+| `textbook_image7.jpeg` | 76.8% | 23.2% | Shadow, curved page |
+| `textbook_image4.jpeg` | 95.9% | 25.9% | Dark table in frame |
+| `printed_download.jpg` | 17.2% | 29.5% | Clean digital chart |
+| `textbook_image6.jpeg` | 30.0% | 33.5% | |
+| `textbook_image.jpeg` | 38.5% | 36.4% | Highlighter, show-through |
+| `textbook_image3.jpeg` | 84.1% | 36.5% | |
+| `textbook_image1.jpg` | 37.4% | 49.0% | |
+| `textbook_image2.jpg` | 53.1% | 54.2% | |
 
 Findings so far:
 
 - Photo conditions (shadows, background, curved pages) drive most errors.
-  On clean images the text is read well.
-- Grayscale + blur helps some photos and badly hurts others
-  (`textbook_image6` 96% → 30%, `textbook_image4` 25% → 96%).
-- The old default (upscale + grayscale + CLAHE + blur) was far worse on
+- Adaptive thresholding rescues hard photos (75–96% → 21–37%) but costs
+  accuracy on clean images (`printed_download` 17% → 30%,
+  `textbook_image1` 37% → 49%). It won on average, so it is the default;
+  the demo lets users switch clean-up off for clean digital images.
+- Photo ablation (`src/ablate_preprocessing.py --group photo`, mean `bod`
+  CER on Dzongkha): grayscale + blur 56.5%; + shadow removal 36.6%;
+  + threshold 34.4%; + both 37.1%; + crop 56.4%; + deskew 60.8%.
+- The original pipeline (upscale + grayscale + CLAHE + blur) was far worse on
   every printed image; CLAHE amplified show-through from the back of pages.
 - `bod` is slightly ahead of `dzo` on Dzongkha, but not on every image.
 - The one Tibetan sample is a clean digital render, so its 0% says little
@@ -65,10 +70,10 @@ Findings so far:
 
 ## Next
 
-1. **Handle real photos.** Add shadow-tolerant steps to the ablation:
-   adaptive thresholding, deskew, and cropping to the page. Run on all
-   Dzongkha and Tibetan images. Pick the default from the results; consider
-   choosing preprocessing per image if no single setting wins.
+1. ~~**Handle real photos.**~~ Done 2026-10-27: adaptive threshold added to
+   the default. Follow-up: choose preprocessing per image (for example, skip
+   thresholding when the page is already evenly lit), since clean images
+   do better without it.
 2. **Build the Tibetan benchmark.** Add 5–10 printed Chöke samples with
    checked transcripts: printed prayer books, pecha pages, and several fonts.
 3. **Choose a language model per category** (`dzo`, `bod`, or `dzo+bod`) once

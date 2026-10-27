@@ -36,18 +36,21 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
 ## Layout
 
 - `src/preprocessing.py`: `preprocess_image(path)` defaults to grayscale +
-  3×3 Gaussian blur (upscale and CLAHE off; chosen from the 2026-10-27
-  ablation). Returns a grayscale array, or RGB if every step is off.
+  3×3 Gaussian blur + adaptive threshold (chosen from the 2026-10-27 photo
+  ablation). Optional flags: `upscale`, `crop_page`, `remove_shadows`,
+  `clahe`, `deskew`. Returns a grayscale array, or RGB if every step is off.
+  When adding a step, also add it to the all-off call in `ocr.extract_text`
+  (`preprocess=False` must mean the original image).
 - `src/ocr.py`: `extract_text(path)` preprocesses, then runs Tesseract with
   `lang="dzo"` and `--psm 6`.
 - `src/evaluate.py`: batch CER/WER over every `ground_truth/` + `test_data/`
   pair across a lang × PSM × preprocessing grid. Each run writes
   `results/eval_<timestamp>/` (results.csv + raw outputs). Scene images are
   listed in `CATEGORIES` and scored separately.
-- `src/ablate_preprocessing.py`: CER for each preprocessing step on its own
-  (and full minus each step) on printed documents. Writes
-  `results/ablation_<timestamp>/`. `preprocess_image` takes `upscale`,
-  `grayscale`, `clahe`, `blur` flags; CLAHE forces grayscale.
+- `src/ablate_preprocessing.py`: CER per preprocessing variant on printed
+  documents, mean per category. `--group base` (original four steps, each
+  alone and full minus each), `--group photo` (photo steps added to the
+  default), or `all`. Writes `results/ablation_<timestamp>/`.
 - `src/streamlit_app.py`: upload, preview, OCR, download.
 - `src/test_paddle.py`: PaddleOCR experiment. Fails with
   `No models are available for lang=bod`. Don't keep guessing language codes.

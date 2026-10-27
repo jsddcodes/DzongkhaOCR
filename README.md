@@ -17,9 +17,9 @@ image → preprocessing (OpenCV) → Tesseract (dzo, --psm 6) → text
 ```
 
 1. **Preprocessing** ([src/preprocessing.py](src/preprocessing.py)):
-   grayscale and a 3×3 Gaussian blur by default. Upscaling and CLAHE contrast
-   enhancement are available but off, because they hurt accuracy in testing
-   (see [ROADMAP.md](ROADMAP.md)).
+   grayscale, a 3×3 Gaussian blur, and an adaptive threshold (black and white,
+   tolerant of shadows) by default. Upscaling, CLAHE, shadow removal, page
+   cropping, and deskew are available but off (see [ROADMAP.md](ROADMAP.md)).
 2. **OCR** ([src/ocr.py](src/ocr.py)): Tesseract with the `dzo` language
    model and page segmentation mode 6 (a single uniform block of text).
 3. **Evaluation** ([src/evaluate.py](src/evaluate.py)): scores every image
@@ -113,18 +113,18 @@ The primary metric is **CER**. When adding to the benchmark:
 
 ### Current results
 
-Mean CER, default preprocessing (grayscale + blur), `--psm 6`. The image
-sets are small, so these numbers are **hints only**. Per-image results are
-in [ROADMAP.md](ROADMAP.md).
+Mean CER, default preprocessing (grayscale + blur + adaptive threshold),
+`--psm 6`. The image sets are small, so these numbers are **hints only**.
+Per-image results are in [ROADMAP.md](ROADMAP.md).
 
 | Category | Images | `dzo` | `bod` |
 |---|---|---|---|
-| Dzongkha, printed (mostly textbook photos) | 9 | 59.7% | 56.5% |
+| Dzongkha, printed (mostly textbook photos) | 9 | 43.4% | 34.4% |
 | Classical Tibetan, printed (one clean digital prayer) | 1 | 6.4% | 0.0% |
-| Handwriting | 2 | 84.5% | 87.5% |
+| Handwriting | 2 | 98.0% | 89.8% |
 
-Clean images are read well; shadows, background, and curved pages cause
-most errors. Handwriting is not usable with Tesseract.
+Shadows, background, and curved pages cause most errors; the adaptive
+threshold handles much of that. Handwriting is not usable with Tesseract.
 
 ## Known limitations
 

@@ -1,12 +1,13 @@
 """
-Preprocessing ablation: find which clean-up step helps or hurts OCR.
+Preprocessing ablation: find which clean-up steps help or hurt OCR.
 
 Runs each printed document with a reference transcript through a set of
-preprocessing variants:
-- original: no preprocessing
-- each step on its own (upscale, grayscale, clahe, blur)
-- full: all four steps (the default pipeline)
-- full minus one step, for each step
+preprocessing variants. Two groups:
+- base: the original four steps (upscale, grayscale, clahe, blur): the
+  original image, each step on its own, all four, and all four minus each
+- photo: steps for real photos (crop to page, shadow removal, adaptive
+  threshold, deskew) added one at a time on top of the default
+  (grayscale + blur)
 
 Each run writes to a new timestamped folder in results/:
 - results.csv: one row per image, variant, and language model
@@ -14,7 +15,7 @@ Each run writes to a new timestamped folder in results/:
 
 Usage (from the project root):
     PYTHONPATH=src paddleocr_env/bin/python src/ablate_preprocessing.py
-    PYTHONPATH=src paddleocr_env/bin/python src/ablate_preprocessing.py --langs dzo --psm 4
+    PYTHONPATH=src paddleocr_env/bin/python src/ablate_preprocessing.py --group photo --langs bod
 """
 
 import argparse
@@ -31,16 +32,38 @@ from ocr import run_tesseract
 from preprocessing import preprocess_image
 
 
-STEPS = ["upscale", "grayscale", "clahe", "blur"]
+BASE_STEPS = ["upscale", "grayscale", "clahe", "blur"]
+PHOTO_STEPS = ["crop_page", "remove_shadows", "threshold", "deskew"]
+STEPS = BASE_STEPS + PHOTO_STEPS
+
+DEFAULT = {"grayscale", "blur"}
 
 # Variant name -> the steps switched on
-VARIANTS = {"original": set()}
-VARIANTS.update({f"only_{step}": {step} for step in STEPS})
-VARIANTS["full"] = set(STEPS)
-VARIANTS.update({f"full_minus_{step}": set(STEPS) - {step} for step in STEPS})
+BASE_VARIANTS = {"original": set()}
+BASE_VARIANTS.update({f"only_{step}": {step} for step in BASE_STEPS})
+BASE_VARIANTS["base_full"] = set(BASE_STEPS)
+BASE_VARIANTS.update({f"base_full_minus_{step}": set(BASE_STEPS) - {step} for step in BASE_STEPS})
+
+PHOTO_VARIANTS = {
+    "default": DEFAULT,
+    "default+crop": DEFAULT | {"crop_page"},
+    "default+shadows": DEFAULT | {"remove_shadows"},
+    "default+threshold": DEFAULT | {"threshold"},
+    "default+deskew": DEFAULT | {"deskew"},
+    "default+shadows+threshold": DEFAULT | {"remove_shadows", "threshold"},
+    "default+crop+shadows": DEFAULT | {"crop_page", "remove_shadows"},
+    "default+crop+shadows+threshold": DEFAULT | {"crop_page", "remove_shadows", "threshold"},
+    "all_photo_steps": DEFAULT | set(PHOTO_STEPS),
+}
+
+GROUPS = {
+    "base": BASE_VARIANTS,
+    "photo": PHOTO_VARIANTS,
+    "all": {**BASE_VARIANTS, **PHOTO_VARIANTS},
+}
 
 CSV_FIELDS = [
-    "image", "lang", "psm", "variant", *STEPS,
+    "image", "category", "lang", "psm", "variant", *STEPS,
     "cer", "ref_chars", "ocr_chars", "runtime_s",
 ]
 
@@ -49,7 +72,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--langs", nargs="+", default=["dzo", "bod"])
     parser.add_argument("--psm", type=int, default=6)
+    parser.add_argument("--group", choices=GROUPS, default="all")
     args = parser.parse_args()
+
+    variants = GROUPS[args.group]
 
     run_dir = RESULTS_DIR / f"ablation_{datetime.now():%Y%m%d_%H%M%S}"
     raw_dir = run_dir / "raw"
@@ -57,18 +83,18 @@ def main():
 
     # Only printed documents: handwriting and scene text fail regardless
     pairs = [
-        (image_path, reference_path)
+        (image_path, reference_path, CATEGORIES.get(image_path.stem, "dzongkha"))
         for image_path, reference_path in find_labeled_images()
         if CATEGORIES.get(image_path.stem, "dzongkha") in DOCUMENT_CATEGORIES
     ]
 
     rows = []
 
-    for image_path, reference_path in pairs:
+    for image_path, reference_path, category in pairs:
         reference = normalize(reference_path.read_text(encoding="utf-8"))
 
         for lang in args.langs:
-            for variant, steps in VARIANTS.items():
+            for variant, steps in variants.items():
                 start = time.perf_counter()
                 image = preprocess_image(
                     str(image_path), **{step: step in steps for step in STEPS}
@@ -84,6 +110,7 @@ def main():
 
                 rows.append({
                     "image": image_path.name,
+                    "category": category,
                     "lang": lang,
                     "psm": args.psm,
                     "variant": variant,
@@ -95,36 +122,40 @@ def main():
                     "runtime_s": round(runtime, 2),
                 })
 
-                print(f"{image_path.name:24} {lang:4} {variant:22} CER {rows[-1]['cer']:7.1%}")
+                print(f"{image_path.name:24} {lang:4} {variant:32} CER {rows[-1]['cer']:7.1%}")
 
     with open(run_dir / "results.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=CSV_FIELDS)
         writer.writeheader()
         writer.writerows(rows)
 
-    # CER per variant: one column per image, then the mean
-    images = [image_path.name for image_path, _ in pairs]
-    short_names = [name.rsplit(".", 1)[0][:16] for name in images]
+    # Mean CER per variant, one column per category and language model.
+    # Per-image scores are in results.csv.
+    categories = sorted({category for _, _, category in pairs})
+    columns = [(category, lang) for category in categories for lang in args.langs]
 
-    for lang in args.langs:
-        print(f"\nCER by variant, {lang}, PSM {args.psm}")
-        print(f"  {'variant':22}" + "".join(f"{name:>18}" for name in short_names) + f"{'mean':>10}")
+    print(f"\nMean CER by variant, PSM {args.psm}")
+    print(f"  {'variant':32}" + "".join(
+        f"{f'{category} {lang}':>16}" for category, lang in columns
+    ))
 
-        for variant in VARIANTS:
+    for variant in variants:
+        means = []
+
+        for category, lang in columns:
             scores = [
-                next(
-                    row["cer"] for row in rows
-                    if (row["image"], row["lang"], row["variant"]) == (image, lang, variant)
-                )
-                for image in images
+                row["cer"] for row in rows
+                if (row["category"], row["lang"], row["variant"]) == (category, lang, variant)
             ]
-            print(
-                f"  {variant:22}"
-                + "".join(f"{score:18.1%}" for score in scores)
-                + f"{sum(scores) / len(scores):10.1%}"
-            )
+            means.append(sum(scores) / len(scores))
 
-    print(f"\nSaved {len(rows)} rows to {run_dir}/")
+        print(f"  {variant:32}" + "".join(f"{mean:16.1%}" for mean in means))
+
+    counts = ", ".join(
+        f"{category}: {sum(1 for _, _, c in pairs if c == category)}" for category in categories
+    )
+    print(f"\nImages per category: {counts}")
+    print(f"Saved {len(rows)} rows to {run_dir}/")
 
 
 if __name__ == "__main__":
