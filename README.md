@@ -118,7 +118,7 @@ Only three printed images have references, so these numbers are
 | Image | `dzo` | `bod` |
 |---|---|---|
 | `textbook_image.jpeg` (modern Dzongkha, photographed page) | 43.4% | 38.5% |
-| `printed_download.jpg` (alphabet chart, stylized headings) | 41.1% | 39.3% |
+| `printed_download.jpg` (alphabet chart, stylized headings) | 27.9% | 17.2% |
 | `prayer.jpg` (clean Classical Tibetan text) | 6.4% | 0.0% |
 
 `prayer.jpg` is Tibetan, so it favors `bod` and says little about Dzongkha.

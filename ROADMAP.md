@@ -11,9 +11,13 @@ so indicative only.
 | Image | `dzo` | `bod` | Notes |
 |---|---|---|---|
 | `textbook_image.jpeg` | 43.4% | 38.5% | Modern Dzongkha, photographed; highlighted heading missed |
-| `printed_download.jpg` | 41.1% | 39.3% | Alphabet chart; large stylized lines are the main errors |
+| `printed_download.jpg` | 27.9% | 17.2% | Alphabet chart; large stylized lines are the main errors |
 | `prayer.jpg` | 6.4% | 0.0% | Classical Tibetan, so it favors `bod` |
-| Mean | 30.3% | 25.9% | `dzo+bod` 25.3% |
+| Mean | 25.9% | 18.6% | `dzo+bod` 18.9% |
+
+`printed_download.txt` was completed on 2026-10-27 (two consonant rows had
+been missing); earlier scores for that image were measured against the
+incomplete reference.
 
 Preprocessing ablation (`src/ablate_preprocessing.py`): the old default
 (upscale + grayscale + CLAHE + blur) averaged 88–97% CER, against 34–38% for
@@ -40,8 +44,7 @@ Tesseract is not usable for handwriting. Scene text (`painting.jpeg`) fails.
 
 The benchmark has one real Dzongkha page. Every decision below depends on more.
 
-- [ ] Fix `ground_truth/printed_download.txt`: the image's lines `ཞ་ཟ་འ་ཡ` and
-      `ར་ལ་ཤ་ས` are missing (owner to check against the image and add them)
+- [x] Fix `ground_truth/printed_download.txt`: add the missing consonant rows
 - [ ] Add 5–10 printed modern Dzongkha crops with checked transcripts. Aim for
       variety: news, textbook, government notice, several fonts, scans and photos
 - [ ] Document normalization rules (NFC, whitespace, tsheg/shad handling)
