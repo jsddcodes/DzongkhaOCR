@@ -35,6 +35,9 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 # Anything not listed here counts as "document".
 CATEGORIES = {
     "painting": "scene",
+    "written_image": "handwriting",
+    "handwriting": "handwriting",
+    "low_quality_handwriting": "handwriting",
 }
 
 CSV_FIELDS = [

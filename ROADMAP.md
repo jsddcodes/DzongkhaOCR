@@ -39,7 +39,7 @@ recorded metric or sample count. Not yet benchmarked.
       fixed normalization, report CER/WER/exact match/runtime, and save raw
       outputs plus a results CSV to `results/` with timestamps
 - [ ] Document normalization rules (NFC, whitespace, tsheg/shad handling)
-- [ ] Keep document, scene-text, and handwriting scores in separate categories
+- [x] Keep document, scene-text, and handwriting scores in separate categories
 
 ## Phase 3: Tuning
 
