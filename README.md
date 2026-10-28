@@ -1,8 +1,9 @@
 # Dzongkha OCR
 
-A prototype for recognizing printed text in the Tibetan script as used in
-Bhutan: Dzongkha for everyday documents, and Classical Tibetan (Chöke) for
-Buddhist prayers and study texts. It uses
+A prototype OCR for printed text in the script used in Bhutan. One OCR reads
+both Dzongkha (everyday documents) and Chöke (Classical Tibetan, for Buddhist
+prayers and study texts): they share the same letters, so there is no
+language to choose. It uses
 [Tesseract](https://github.com/tesseract-ocr/tesseract) (through
 `pytesseract`), OpenCV preprocessing, and a Streamlit demo UI.
 
@@ -131,7 +132,7 @@ Per-image results are in [ROADMAP.md](ROADMAP.md).
 | Category | Images | `dzo` | `bod` | `bod_uchen` |
 |---|---|---|---|---|
 | Dzongkha, printed (mostly textbook photos) | 9 | 43.4% | 34.4% | 32.0% |
-| Classical Tibetan, printed (one clean digital prayer) | 1 | 6.4% | 0.0% | 3.2% |
+| Chöke, printed (one clean digital prayer) | 1 | 6.4% | 0.0% | 3.2% |
 | Handwriting | 2 | 98.0% | 89.8% | — |
 
 Shadows, background, and curved pages cause most errors; the adaptive

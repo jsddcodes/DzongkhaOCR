@@ -31,18 +31,19 @@ RESULTS_DIR = Path("results")
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
-# Each image is scored in one category. Printed documents are split by
-# language: Dzongkha, and Classical Tibetan (Chöke) used for Buddhist texts.
+# Each image is scored in one category. The OCR itself treats Dzongkha and
+# Chöke (Classical Tibetan, used for Buddhist texts) the same, but scores are
+# kept apart so a change that helps one and hurts the other is visible.
 # Anything not listed here counts as "dzongkha".
 CATEGORIES = {
-    "prayer": "tibetan",
+    "prayer": "choekey",
     "painting": "scene",
     "written_image": "handwriting",
     "handwriting": "handwriting",
     "low_quality_handwriting": "handwriting",
 }
 
-DOCUMENT_CATEGORIES = {"dzongkha", "tibetan"}
+DOCUMENT_CATEGORIES = {"dzongkha", "choekey"}
 
 CSV_FIELDS = [
     "image", "category", "lang", "psm", "preprocess",

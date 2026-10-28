@@ -30,8 +30,9 @@ These guidelines come from what failed in the test photos.
   you type it with the Dzongkha keyboard on.
 - **Type exactly what is on the page,** one line of text per line, including
   tsheg and shad. Don't correct spelling.
-- **Tibetan texts:** tell Claude the filenames, or add them to `CATEGORIES` in
-  `src/evaluate.py` as `"tibetan"`, so they are scored separately from Dzongkha.
+- **Chöke texts** (prayers, pechas): tell Claude the filenames, or add them to
+  `CATEGORIES` in `src/evaluate.py` as `"choekey"`, so their score is reported
+  next to Dzongkha rather than mixed in.
 - **Aim for variety:** printed prayer books, pecha pages (woodblock and
   modern print), different fonts and sizes, a few deliberately hard photos.
 - **Privacy:** don't include names or personal details, since test images go

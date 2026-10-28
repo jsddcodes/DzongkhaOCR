@@ -5,14 +5,19 @@ summer internship (report submitted). No external deadline.
 
 ## Goal
 
-OCR for printed text in the Tibetan script as used in Bhutan, in two languages:
+One OCR for printed text in the script used in Bhutan, covering both:
 
 - **Dzongkha**: everyday documents, textbooks, notices
-- **Classical Tibetan (Chöke)**: Buddhist prayers, scriptures, and study texts
+- **Chöke** (Classical Tibetan): Buddhist prayers, scriptures, and study texts
 
-Both share one script, so they share one pipeline, but they are scored as
-separate categories (`dzongkha`, `tibetan`) because spelling, vocabulary, and
-page layouts (for example pecha pages) differ.
+They use the same letters (the 30 consonants, vowel signs, stacked letters,
+tsheg and shad), so the OCR treats them as one: one pipeline, one model, and
+no language choice for the user. Chöke is the harder part (deeper stacks,
+Sanskrit-style stacks in mantras, pecha layouts, woodblock prints).
+
+For testing only, scores are reported in two categories (`dzongkha`,
+`choekey`), so a change that helps one and hurts the other is not hidden in
+an average dominated by whichever has more images.
 
 ## Current baseline (measured 2026-10-27)
 
@@ -22,7 +27,7 @@ CER, lower is better.
 | Category | Images | `dzo` | `bod` | `dzo+bod` | `bod_uchen` |
 |---|---|---|---|---|---|
 | Dzongkha, printed | 9 | 43.4% | 34.4% | 40.1% | 32.0% |
-| Tibetan, printed | 1 | 6.4% | 0.0% | 0.0% | 3.2% |
+| Chöke, printed | 1 | 6.4% | 0.0% | 0.0% | 3.2% |
 | Handwriting | 2 | 98.0% | 89.8% | 85.5% | — |
 
 `bod_uchen` is BDRC's Tesseract model fine-tuned from `bod` on ~121k printed
@@ -58,7 +63,7 @@ Findings so far:
 - The original pipeline (upscale + grayscale + CLAHE + blur) was far worse on
   every printed image; CLAHE amplified show-through from the back of pages.
 - Model ranking on Dzongkha so far: `bod_uchen` > `bod` > `dzo+bod` > `dzo`.
-- The one Tibetan sample is a clean digital render, so its 0% says little
+- The one Chöke sample is a clean digital render, so its 0% says little
   about real prayer books or pechas.
 - Tesseract cannot read handwriting. Scene text (`painting.jpeg`) fails.
 
@@ -87,14 +92,15 @@ Findings so far:
    - Keeping the run with higher Tesseract confidence reached 27.3%, but
      picked wrong on 2 of 10, doubles runtime, and confidences are noisy
      (many near 0). Not adopted.
-3. **Build the Tibetan benchmark.** Add 5–10 printed Chöke samples with
+3. **Build the Chöke benchmark.** Add 5–10 printed Chöke samples with
    checked transcripts: printed prayer books, pecha pages, and several fonts.
    `bod_uchen` was trained on pechas, so this is where it should be tested.
    Candidate source: openpecha/OCR-Tibetan_line_to_text_benchmark (~420k
    line images with text, mostly printed); its license is not yet confirmed.
-4. **Confirm the model per category** (`bod_uchen`, `bod`, `dzo`) once both
-   categories have enough images. If they differ, add a "text type" option
-   (Dzongkha / Tibetan) to the demo.
+4. **Confirm one model works for both** once both categories have enough
+   images. Pick the model with the best balance across Dzongkha and Chöke,
+   not separate models per language. If none is good enough on both, that
+   is the case for training (below).
 5. ~~**Write photo guidelines.**~~ Done: [docs/photo_guidelines.md](docs/photo_guidelines.md).
 6. ~~**Categorize errors.**~~ Done: `src/error_analysis.py`. For `bod_uchen` on
    Dzongkha (590 errors over 2,125 characters): consonants 44%, tsheg 15%,
@@ -109,7 +115,7 @@ Findings so far:
 Also checked 2026-10-27: PSM 3, 4, and 6 with every photo variant for
 `bod_uchen` and `bod`. The current default (grayscale + blur + threshold,
 PSM 6, 32.0%) was within 0.2 points of the best Dzongkha result (PSM 3,
-31.8%), and PSM 3/4 were worse on the Tibetan sample, so PSM 6 stays.
+31.8%), and PSM 3/4 were worse on the Chöke sample, so PSM 6 stays.
 
 ## Later: train Tesseract
 
@@ -118,7 +124,8 @@ depend on an agency corpus.
 
 - [ ] Collect openly licensed text in both languages (Dzongkha prose;
       Tibetan Buddhist e-texts) and fonts used in Bhutanese print and pechas
-- [ ] Render synthetic line images and fine-tune from `bod` or `dzo` (tesstrain)
+- [ ] Render synthetic line images from both languages mixed together and
+      fine-tune one model from `bod_uchen` or `bod` (tesstrain)
 - [ ] Compare against `dzo` and `bod` on both categories. Keep benchmark text
       out of the training data
 
