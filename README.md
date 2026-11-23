@@ -138,7 +138,7 @@ Per-image results are in [ROADMAP.md](ROADMAP.md).
 |---|---|---|---|---|
 | Dzongkha, printed (mostly textbook photos) | 9 | 43.4% | 34.4% | 32.0% |
 | Chöke, printed (one clean digital prayer) | 1 | 6.4% | 0.0% | 3.2% |
-| Handwriting | 2 | 98.0% | 89.8% | 76.8% |
+| Handwriting | 1 | 116.3% | 90.2% | 83.7% |
 
 Shadows, background, and curved pages cause most errors; the adaptive
 threshold handles much of that. Handwriting is not usable with Tesseract.

@@ -28,7 +28,7 @@ CER, lower is better.
 |---|---|---|---|---|---|
 | Dzongkha, printed | 9 | 43.4% | 34.4% | 40.1% | 32.0% |
 | Chöke, printed | 1 | 6.4% | 0.0% | 0.0% | 3.2% |
-| Handwriting | 2 | 98.0% | 89.8% | 85.5% | 76.8% |
+| Handwriting | 1 | 116.3% | 90.2% | 91.3% | 83.7% |
 
 `bod_uchen` is BDRC's Tesseract model fine-tuned from `bod` on ~121k printed
 Tibetan lines (CC0, in `models/`). On the 8 textbook photos it averages 27.2%
