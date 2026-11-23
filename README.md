@@ -53,9 +53,10 @@ source venv/bin/activate
 pip install pytesseract opencv-python jiwer streamlit pillow
 ```
 
-Versions known to work: pytesseract 0.3.13, opencv-python 5.0.0.93,
-jiwer 4.0.0, streamlit 1.60.0, pillow 12.3.0. `requirements.txt` has not
-been filled in yet.
+Or install the pinned versions: `pip install -r requirements.txt`
+(pytesseract 0.3.13, opencv-python 5.0.0.93, jiwer 4.0.0, streamlit 1.60.0,
+pillow 12.3.0). `src/error_analysis.py` also needs `rapidfuzz`, which jiwer
+installs. `packages.txt` lists the system packages Streamlit Cloud needs.
 
 Install only one of `opencv-python` and `opencv-contrib-python`. Having
 both installed causes conflicts.
@@ -66,11 +67,12 @@ Run all commands from the project root with `PYTHONPATH=src`, because the
 modules import each other by bare name and data paths are relative to the root.
 
 ```bash
-# OCR a single image (currently hard-coded to images/sample.jpeg)
-PYTHONPATH=src python src/ocr.py
+# OCR one image (defaults: images/sample.jpeg, bod_uchen, PSM 6, preprocessing on)
+PYTHONPATH=src python src/ocr.py test_data/prayer.jpg
+PYTHONPATH=src python src/ocr.py test_data/prayer.jpg --lang bod --no-preprocess
 
-# Save the preprocessed image to results/preprocessed.png
-PYTHONPATH=src python src/preprocessing.py
+# Save a preprocessed image (default output: results/preprocessed.png)
+PYTHONPATH=src python src/preprocessing.py test_data/textbook_image5.jpeg
 
 # Batch evaluation: every labeled image × dzo/bod/dzo+bod × PSM 4/6 × preprocessing on/off
 # Writes results.csv and raw outputs to a new results/eval_<timestamp>/ folder
@@ -99,11 +101,11 @@ src/
   evaluate.py        batch CER evaluation over all labeled images
   ablate_preprocessing.py  CER for each preprocessing step on its own
   error_analysis.py  errors by character type (consonant, stacked, tsheg, ...)
+  streamlit_app.py   demo UI
+  test_paddle.py     PaddleOCR experiment (see Known limitations)
 docs/
   photo_guidelines.md  how to photograph pages for OCR and the test set
 models/              Tesseract models kept in the repo (bod_uchen)
-  streamlit_app.py   demo UI
-  test_paddle.py     PaddleOCR experiment (see Known limitations)
 test_data/           evaluation images
 ground_truth/        reference transcripts, named <image_stem>.txt (UTF-8)
 images/              miscellaneous samples
@@ -119,6 +121,9 @@ The primary metric is **CER**. When adding to the benchmark:
 - Reference transcripts must be checked by a human.
 - Normalize OCR output and reference the same way (Unicode NFC, collapse
   whitespace) before scoring, and keep the raw output too.
+- Two secondary scores sit beside CER, never in place of it: `cer_nospace`
+  (all spaces removed) and `cer_punct` (shad variants treated as equal: a
+  tsheg before a shad, double shad, and a leading shad).
 - Compare configurations (`dzo` vs `bod`, preprocessing, PSM) on the same images.
 - Report scene text (for example `painting.jpeg`, a painted rock) and handwriting
   separately from printed documents.
@@ -133,7 +138,7 @@ Per-image results are in [ROADMAP.md](ROADMAP.md).
 |---|---|---|---|---|
 | Dzongkha, printed (mostly textbook photos) | 9 | 43.4% | 34.4% | 32.0% |
 | Chöke, printed (one clean digital prayer) | 1 | 6.4% | 0.0% | 3.2% |
-| Handwriting | 2 | 98.0% | 89.8% | — |
+| Handwriting | 2 | 98.0% | 89.8% | 76.8% |
 
 Shadows, background, and curved pages cause most errors; the adaptive
 threshold handles much of that. Handwriting is not usable with Tesseract.
@@ -148,7 +153,6 @@ threshold handles much of that. Handwriting is not usable with Tesseract.
 - PaddleOCR ([src/test_paddle.py](src/test_paddle.py)) currently fails with
   `No models are available for lang=bod`. No compatible Tibetan/Dzongkha
   recognition model has been found.
-- `ocr.py` and `preprocessing.py` run on a hard-coded sample image when run directly.
 
 ## Data privacy
 

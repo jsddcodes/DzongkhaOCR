@@ -1,5 +1,4 @@
 import pytesseract
-import cv2
 
 from pathlib import Path
 
@@ -61,9 +60,18 @@ def run_tesseract(image, lang="dzo", psm=6):
 
 
 if __name__ == "__main__":
-    image_path = "images/sample.jpeg"
+    import argparse
 
-    text = extract_text(image_path)
+    parser = argparse.ArgumentParser(description="OCR one image and print the text.")
+    parser.add_argument("image", nargs="?", default="images/sample.jpeg")
+    parser.add_argument("--lang", default="bod_uchen")
+    parser.add_argument("--psm", type=int, default=6)
+    parser.add_argument("--no-preprocess", action="store_true")
+    args = parser.parse_args()
+
+    text = extract_text(
+        args.image, lang=args.lang, psm=args.psm, preprocess=not args.no_preprocess
+    )
 
     print("Recognized Text:")
     print("----------------")

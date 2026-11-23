@@ -71,7 +71,8 @@ tesseract test_data/printed_download.jpg stdout -l bod --psm 6
 
 - Primary metric is CER. Normalize both sides the same way before scoring
   (Unicode NFC, collapse whitespace) and keep raw output alongside.
-  `cer_nospace` (spaces removed) is a secondary check, not a replacement.
+  `cer_nospace` (spaces removed) and `cer_punct` (shad variants equal) are
+  secondary checks, not replacements.
 - Compare configurations (`dzo`/`bod`, preprocessing variant, PSM) on identical
   images. With so few labeled images, treat differences as hints only.
 - Ground truth must be human-verified. Don't edit or replace reference

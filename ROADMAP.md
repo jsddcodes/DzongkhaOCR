@@ -1,6 +1,6 @@
 # Roadmap
 
-Last updated: 2026-10-27. Independent project, continued after a GovTech
+Last updated: 2026-11-22. Independent project, continued after a GovTech
 summer internship (report submitted). No external deadline.
 
 ## Goal
@@ -28,7 +28,7 @@ CER, lower is better.
 |---|---|---|---|---|---|
 | Dzongkha, printed | 9 | 43.4% | 34.4% | 40.1% | 32.0% |
 | Chöke, printed | 1 | 6.4% | 0.0% | 0.0% | 3.2% |
-| Handwriting | 2 | 98.0% | 89.8% | 85.5% | — |
+| Handwriting | 2 | 98.0% | 89.8% | 85.5% | 76.8% |
 
 `bod_uchen` is BDRC's Tesseract model fine-tuned from `bod` on ~121k printed
 Tibetan lines (CC0, in `models/`). On the 8 textbook photos it averages 27.2%
@@ -95,8 +95,15 @@ Findings so far:
 3. **Build the Chöke benchmark.** Add 5–10 printed Chöke samples with
    checked transcripts: printed prayer books, pecha pages, and several fonts.
    `bod_uchen` was trained on pechas, so this is where it should be tested.
-   Candidate source: openpecha/OCR-Tibetan_line_to_text_benchmark (~420k
-   line images with text, mostly printed); its license is not yet confirmed.
+   Checked 2026-11-22: openpecha/OCR-Tibetan_line_to_text_benchmark
+   (421,603 lines: modern print, woodblock Kanjur/Tenjur, some manuscript)
+   is **not usable as-is**. No license is stated on the dataset card or
+   anywhere else found, and BDRC lists `bod_uchen` as trained on it, so it
+   would flatter `bod_uchen`. Revisit only with written permission from
+   OpenPecha/WeBuddhist, and then only for the other models.
+   Best route now: photograph printed prayer books and pecha pages owned
+   by the project (following [docs/photo_guidelines.md](docs/photo_guidelines.md))
+   and transcribe them by hand.
 4. **Confirm one model works for both** once both categories have enough
    images. Pick the model with the best balance across Dzongkha and Chöke,
    not separate models per language. If none is good enough on both, that
@@ -109,8 +116,13 @@ Findings so far:
 7. **Normalization rules.** Current: NFC, whitespace runs collapsed to one
    space. `evaluate.py` also reports `cer_nospace` (all spaces removed); it
    changes mean Dzongkha CER only from 32.0% to 31.5%, so spacing is not
-   hiding real accuracy. Open: whether to treat tsheg before shad (`ང་།` vs
-   `ང།`) and leading shad as equivalent.
+   hiding real accuracy. Done 2026-11-22: `cer_punct` treats shad variants
+   as equal (tsheg before shad, double shad `། །`, leading shad). Dzongkha
+   barely moves (`bod_uchen` 32.0% → 32.3%; slightly higher because the
+   reference gets shorter while the errors stay), so punctuation layout is
+   not hiding accuracy either. On the Chöke sample `bod_uchen` drops from
+   3.2% to 0.7%: its errors there are almost all the missing leading `།`.
+   CER stays the primary metric; both are secondary checks.
 
 Also checked 2026-10-27: PSM 3, 4, and 6 with every photo variant for
 `bod_uchen` and `bod`. The current default (grayscale + blur + threshold,

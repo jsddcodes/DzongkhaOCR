@@ -174,16 +174,12 @@ def _deskew(gray):
 
 
 if __name__ == "__main__":
-    image_path = "images/sample.jpeg"
+    import sys
+
+    image_path = sys.argv[1] if len(sys.argv) > 1 else "images/sample.jpeg"
+    output_path = sys.argv[2] if len(sys.argv) > 2 else "results/preprocessed.png"
 
     processed = preprocess_image(image_path)
+    cv2.imwrite(output_path, processed)
 
-    cv2.imwrite(
-        "results/preprocessed.png",
-        processed
-    )
-
-    print(
-        "Preprocessed image saved to "
-        "results/preprocessed.png"
-    )
+    print(f"Preprocessed image saved to {output_path}")

@@ -47,7 +47,7 @@ DOCUMENT_CATEGORIES = {"dzongkha", "choekey"}
 
 CSV_FIELDS = [
     "image", "category", "lang", "psm", "preprocess",
-    "cer", "cer_nospace", "wer", "exact_match", "ref_chars", "ocr_chars", "runtime_s",
+    "cer", "cer_nospace", "cer_punct", "wer", "exact_match", "ref_chars", "ocr_chars", "runtime_s",
 ]
 
 
@@ -64,6 +64,33 @@ def normalize(text):
 def cer_without_spaces(reference, output):
     """CER after removing every space from both normalized texts."""
     reference, output = reference.replace(" ", ""), output.replace(" ", "")
+    return round(cer(reference, output), 4) if output else 1.0
+
+
+# A run of shad marks (U+0F0D–U+0F12), with any spaces between them and an
+# optional tsheg before the first one: "ང་།", "ཀ། །ཁ", "ཀ།\nཁ"
+SHAD_RUN = re.compile(r"་?\s*[།-༒](?:\s*[།-༒])*\s*")
+
+
+def normalize_punctuation(text):
+    """
+    Treat shad variants as equivalent (applied after normalize()):
+
+    - a tsheg before a shad is dropped ("ང་།" and "ང།" match)
+    - a run of shads and the spaces around it becomes one "།", so a double
+      shad ("། །", common in verse) matches a single one or a line break
+    - shads at the very start of the text are dropped
+
+    The visible meaning is unchanged; this only hides punctuation-layout
+    differences that depend on typesetting and line breaks.
+    """
+    text = SHAD_RUN.sub("།", text)
+    return text.lstrip("།")
+
+
+def cer_punctuation_insensitive(reference, output):
+    """CER after normalize_punctuation() on both normalized texts."""
+    reference, output = normalize_punctuation(reference), normalize_punctuation(output)
     return round(cer(reference, output), 4) if output else 1.0
 
 
@@ -139,6 +166,9 @@ def main():
                 # Dzongkha phrases varies with typesetting, so this isolates
                 # errors in the letters and punctuation themselves
                 "cer_nospace": cer_without_spaces(reference, output),
+                # Secondary: CER with shad/tsheg-before-shad variants
+                # treated as equal (see normalize_punctuation)
+                "cer_punct": cer_punctuation_insensitive(reference, output),
                 # Split on spaces only; Dzongkha marks syllables with tsheg,
                 # so this is a rough phrase-level measure
                 "wer": round(wer(reference, output), 4) if output else 1.0,
@@ -165,17 +195,18 @@ def main():
         print(f"\n{category} ({images} image{'s' if images != 1 else ''})")
 
         for lang, psm, preprocess in configs:
-            scores = [
-                row["cer"] for row in category_rows
+            config_rows = [
+                row for row in category_rows
                 if (row["lang"], row["psm"], row["preprocess"]) == (lang, psm, preprocess)
             ]
-            nospace = [
-                row["cer_nospace"] for row in category_rows
-                if (row["lang"], row["psm"], row["preprocess"]) == (lang, psm, preprocess)
-            ]
+
+            def mean(field):
+                return sum(row[field] for row in config_rows) / len(config_rows)
+
             print(
-                f"  {config_name(lang, psm, preprocess):22} {sum(scores) / len(scores):7.1%}"
-                f"   (ignoring spaces {sum(nospace) / len(nospace):6.1%})"
+                f"  {config_name(lang, psm, preprocess):22} {mean('cer'):7.1%}"
+                f"   (ignoring spaces {mean('cer_nospace'):6.1%},"
+                f" shad variants {mean('cer_punct'):6.1%})"
             )
 
     print(f"\nSaved {len(rows)} rows to {run_dir}/")

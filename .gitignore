@@ -4,3 +4,8 @@ __pycache__/
 .DS_Store
 .agents/skills/
 .claude/skills/
+.Rhistory
+
+# Evaluation runs stay local (raw OCR outputs are kept, never overwritten)
+results/eval_*/
+results/ablation_*/
